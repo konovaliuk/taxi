@@ -10,13 +10,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public abstract class Dao<T extends Dto>  {
+public abstract class MySQLDao<T extends Dto>  {
 
-    private static final Logger log = LoggerLoader.getLogger(Dao.class);
+    private static final Logger log = LoggerLoader.getLogger(MySQLDao.class);
 
     public class SelectOptions {
         private static final String ORDER_BY = " ORDER BY ";
-        private String[][] orderByColumns = null;
+        private String[][] orderByColumns;
 
         private Integer limit;
         private Integer offset;
@@ -95,13 +95,15 @@ public abstract class Dao<T extends Dto>  {
         }
     }
 
-    protected Dao() {
+    protected MySQLDao() {
     }
+
 
 /////////////////////////////////////////////////////////////////////////////
 
     private DataSource dataSource;
-    protected Dao(DataSource dataSource) {
+
+    protected MySQLDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
     private Connection getConnection() throws SQLException {
@@ -212,4 +214,8 @@ public abstract class Dao<T extends Dto>  {
     protected abstract T fetchSingleResult(ResultSet rs) throws SQLException;
 
     protected abstract void fillPreparedStatement(T dto, PreparedStatement ps, boolean pkFill) throws SQLException;
+
+    public MySQLDao clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 }

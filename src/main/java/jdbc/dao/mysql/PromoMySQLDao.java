@@ -1,5 +1,6 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.IPromoDao;
 import jdbc.dto.Promo;
 import jdbc.exception.PromoDaoException;
@@ -9,13 +10,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class PromoDao extends Dao<Promo> implements IPromoDao {
+public final class PromoMySQLDao extends MySQLDao<Promo> implements IPromoDao {
 
     private static final String SQL_SELECT = "SELECT promo.promo_id, promo.name, promo.conditions, promo.cost_multiplier FROM promo ";
     private static final String SQL_INSERT = "INSERT INTO promo (promo_id, name, conditions, cost_multiplier) VALUES (?, ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE promo SET promo_id = ?, name = ?, conditions = ?, cost_multiplier = ? WHERE promo.promo_id = ?";
     private static final String SQL_DELETE = "DELETE FROM promo WHERE promo.promo_id = ?";
     private static final String SQL_COUNT = "SELECT count(promo) from promo ";
+
+
+    private static volatile PromoMySQLDao instance;
+
+    private PromoMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static PromoMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (PromoMySQLDao.class) {
+                if (instance == null) {
+                    instance = new PromoMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(Promo dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getPromoId() != null && pkFill) {

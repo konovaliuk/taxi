@@ -1,18 +1,38 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.ICarTypeDao;
 import jdbc.dto.*;
 import jdbc.exception.*;
 import java.util.*;
 import java.sql.*;
 
-public class CarTypeDao extends Dao<CarType> implements ICarTypeDao {
+public final class CarTypeMySQLDao extends MySQLDao<CarType> implements ICarTypeDao {
 
     private static final String SQL_SELECT = "SELECT car_type.car_type_id, car_type.name, car_type.cost_multiplier FROM car_type ";
     private static final String SQL_INSERT = "INSERT INTO car_type (car_type_id, name, cost_multiplier) VALUES (?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE car_type SET car_type_id = ?, name = ?, cost_multiplier = ? WHERE car_type.car_type_id = ?";
     private static final String SQL_DELETE = "DELETE FROM car_type WHERE car_type.car_type_id = ?";
     private static final String SQL_COUNT = "SELECT count(car_type) from car_type ";
+
+
+    private static volatile CarTypeMySQLDao instance;
+
+    private CarTypeMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static CarTypeMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (CarTypeMySQLDao.class) {
+                if (instance == null) {
+                    instance = new CarTypeMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(CarType dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getCarTypeId() != null && pkFill) {

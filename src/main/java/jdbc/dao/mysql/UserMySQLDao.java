@@ -1,18 +1,38 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.IUserDao;
 import jdbc.dto.*;
 import jdbc.exception.*;
 import java.util.*;
 import java.sql.*;
 
-public class UserDao  extends Dao<User> implements IUserDao {
+public final class UserMySQLDao extends MySQLDao<User> implements IUserDao {
 
     private static final String SQL_SELECT = "SELECT user.user_id, user.type, user.login, user.password FROM user ";
     private static final String SQL_INSERT = "INSERT INTO user (user_id, type, login, password) VALUES (?, ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE user SET user_id = ?, type = ?, login = ?, password = ? WHERE user.user_id = ?";
     private static final String SQL_DELETE = "DELETE FROM user WHERE user.user_id = ?";
     private static final String SQL_COUNT = "SELECT count(user) from user ";
+
+
+    private static volatile UserMySQLDao instance;
+
+    private UserMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static UserMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (UserMySQLDao.class) {
+                if (instance == null) {
+                    instance = new UserMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(User dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getUserId() != null && pkFill) {

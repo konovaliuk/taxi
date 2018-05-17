@@ -1,18 +1,38 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.IPointDao;
 import jdbc.dto.*;
 import jdbc.exception.*;
 import java.util.*;
 import java.sql.*;
 
-public class PointDao extends Dao<Point> implements IPointDao {
+public final class PointMySQLDao extends MySQLDao<Point> implements IPointDao {
 
     private static final String SQL_SELECT = "SELECT point.point_id, point.name, point.x_cor, point.y_cor FROM point ";
     private static final String SQL_INSERT = "INSERT INTO point (point_id, name, x_cor, y_cor) VALUES (?, ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE point SET point_id = ?, name = ?, x_cor = ?, y_cor = ? WHERE point.point_id = ?";
     private static final String SQL_DELETE = "DELETE FROM point WHERE point.point_id = ?";
     private static final String SQL_COUNT = "SELECT count(point) from point ";
+
+
+    private static volatile PointMySQLDao instance;
+
+    private PointMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static PointMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (PointMySQLDao.class) {
+                if (instance == null) {
+                    instance = new PointMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(Point dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getPointId() != null && pkFill) {

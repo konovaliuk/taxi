@@ -1,5 +1,6 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.IAppliedPromoDao;
 import jdbc.dto.AppliedPromo;
 import jdbc.exception.AppliedPromoDaoException;
@@ -9,13 +10,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class AppliedPromoDao extends Dao<AppliedPromo> implements IAppliedPromoDao {
+public final class AppliedPromoMySQLDao extends MySQLDao<AppliedPromo> implements IAppliedPromoDao {
 
     private static final String SQL_SELECT = "SELECT applied_promo.applied_promo, applied_promo.promo_id, applied_promo.orders_order_id FROM applied_promo ";
     private static final String SQL_INSERT = "INSERT INTO applied_promo (applied_promo, promo_id, order_id) VALUES (?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE applied_promo SET applied_promo = ?, promo_id = ?, order_id = ? WHERE applied_promo.applied_promo = ?";
     private static final String SQL_DELETE = "DELETE FROM applied_promo WHERE applied_promo.applied_promo = ?";
     private static final String SQL_COUNT = "SELECT count(applied_promo) from applied_promo ";
+
+
+    private static volatile AppliedPromoMySQLDao instance;
+
+    private AppliedPromoMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static AppliedPromoMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (AppliedPromoMySQLDao.class) {
+                if (instance == null) {
+                    instance = new AppliedPromoMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(AppliedPromo dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getAppliedPromoId() != null && pkFill) {

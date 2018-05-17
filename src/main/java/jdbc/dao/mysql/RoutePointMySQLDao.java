@@ -1,18 +1,38 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.IRoutePointDao;
 import jdbc.dto.*;
 import jdbc.exception.*;
 import java.util.*;
 import java.sql.*;
 
-public class RoutePointDao extends Dao<RoutePoint> implements IRoutePointDao {
+public final class RoutePointMySQLDao extends MySQLDao<RoutePoint> implements IRoutePointDao {
 
     private static final String SQL_SELECT = "SELECT route_point.route_point_id, route_point.points_id, route_point.order_id, route_point.type, route_point.visiting_order FROM route_point ";
     private static final String SQL_INSERT = "INSERT INTO route_point (route_point_id, points_id, order_id, type, visiting_order) VALUES (?, ?, ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE route_point SET route_point_id = ?, points_id = ?, order_id = ?, type = ?, visiting_order = ? WHERE route_point.route_point_id = ?";
     private static final String SQL_DELETE = "DELETE FROM route_point WHERE route_point.route_point_id = ?";
     private static final String SQL_COUNT = "SELECT count(route_point) from route_point ";
+
+
+    private static volatile RoutePointMySQLDao instance;
+
+    private RoutePointMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static RoutePointMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (RoutePointMySQLDao.class) {
+                if (instance == null) {
+                    instance = new RoutePointMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(RoutePoint dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getRoutePointId() != null && pkFill) {

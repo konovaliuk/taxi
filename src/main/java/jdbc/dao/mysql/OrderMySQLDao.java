@@ -1,5 +1,6 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.IOrderDao;
 import jdbc.dto.Order;
 import jdbc.exception.OrderDaoException;
@@ -9,13 +10,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class OrderDao extends Dao<Order> implements IOrderDao {
+public final class OrderMySQLDao extends MySQLDao<Order> implements IOrderDao {
 
     private static final String SQL_SELECT = "SELECT order.order_id, order.client_id, order.car_id, order.loyalty_discount, order.order_state, order.distance_cost FROM order ";
     private static final String SQL_INSERT = "INSERT INTO order (order_id, client_id, car_id, loyalty_discount, order_state, distance_cost) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE order SET order_id = ?, client_id = ?, car_id = ?, loyalty_discount = ?, order_state = ?, distance_cost = ? WHERE order.order_id = ?";
     private static final String SQL_DELETE = "DELETE FROM order WHERE order.order_id = ?";
     private static final String SQL_COUNT = "SELECT count(order) from order ";
+
+
+    private static volatile OrderMySQLDao instance;
+
+    private OrderMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static OrderMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (OrderMySQLDao.class) {
+                if (instance == null) {
+                    instance = new OrderMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(Order dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getOrderId() != null && pkFill) {

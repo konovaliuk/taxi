@@ -1,18 +1,38 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.ILoyaltyDiscountDao;
 import jdbc.dto.*;
 import jdbc.exception.*;
 import java.util.*;
 import java.sql.*;
 
-public class LoyaltyDiscountDao extends Dao<LoyaltyDiscount> implements ILoyaltyDiscountDao {
+public final class LoyaltyDiscountMySQLDao extends MySQLDao<LoyaltyDiscount> implements ILoyaltyDiscountDao {
 
     private static final String SQL_SELECT = "SELECT loyalty_discount.loyalty_discount_id, loyalty_discount.orders_threshold, loyalty_discount.cost_multiplier FROM loyalty_discount ";
     private static final String SQL_INSERT = "INSERT INTO loyalty_discount (loyalty_discount_id, orders_threshold, cost_multiplier) VALUES (?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE loyalty_discount SET loyalty_discount_id = ?, orders_threshold = ?, cost_multiplier = ? WHERE loyalty_discount.loyalty_discount_id = ?";
     private static final String SQL_DELETE = "DELETE FROM loyalty_discount WHERE loyalty_discount.loyalty_discount_id = ?";
     private static final String SQL_COUNT = "SELECT count(loyalty_discount) from loyalty_discount ";
+
+
+    private static volatile LoyaltyDiscountMySQLDao instance;
+
+    private LoyaltyDiscountMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static LoyaltyDiscountMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (LoyaltyDiscountMySQLDao.class) {
+                if (instance == null) {
+                    instance = new LoyaltyDiscountMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(LoyaltyDiscount dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getLoyaltyDiscountId() != null && pkFill) {

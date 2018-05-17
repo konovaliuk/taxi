@@ -1,18 +1,38 @@
 package jdbc.dao.mysql;
 
+import jdbc.connection.DataSource;
 import jdbc.dao.idao.ICarDao;
 import jdbc.dto.*;
 import jdbc.exception.*;
 import java.util.*;
 import java.sql.*;
 
-public class CarDao extends Dao<Car> implements ICarDao {
+public final class CarMySQLDao extends MySQLDao<Car> implements ICarDao {
 
     private static final String SQL_SELECT = "SELECT car.car_id, car.type, car.state, car.reg_number, car.model FROM car ";
     private static final String SQL_INSERT = "INSERT INTO car (car_id, type, state, reg_number, model) VALUES (?, ?, ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE car SET car_id = ?, type = ?, state = ?, reg_number = ?, model = ? WHERE car.car_id = ?";
     private static final String SQL_DELETE = "DELETE FROM car WHERE car.car_id = ?";
     private static final String SQL_COUNT = "SELECT count(car_id) from car";
+
+
+    private static volatile CarMySQLDao instance;
+
+    private CarMySQLDao(DataSource dataSource) {
+        super(dataSource);
+    }
+
+    public static CarMySQLDao getInstance(DataSource dataSource){
+        if (instance == null){
+            synchronized (CarMySQLDao.class) {
+                if (instance == null) {
+                    instance = new CarMySQLDao(dataSource);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     protected void fillPreparedStatement(Car dto, PreparedStatement ps, boolean pkFill) throws SQLException {
         if (dto.getCarId() != null && pkFill) {
